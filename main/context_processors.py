@@ -6,3 +6,4 @@ def get_user(request):
             'user': request.user
         }
         return context
+    return {'user': None}
