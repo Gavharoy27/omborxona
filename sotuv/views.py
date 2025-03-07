@@ -27,7 +27,23 @@ class SotuvlarView(View):
             mijoz = Mijoz.objects.get(id=request.POST.get('mijoz_id'))
 
             mahsulot = Mahsulot.objects.get(id=request.POST.get('mahsulot_id'))
-            miqdor = request.POST.get('miqdor')
+            miqdor = float(request.POST.get('miqdor'))
+            jami_summa =  None if request.POST.get('jami_summa') == "" else float(request.POST.get('jami_summa'))
+            tolandi = None if request.POST.get('tolandi') == "" else float(request.POST.get('tolandi'))
+
+            if jami_summa is None:
+                jami_summa = mahsulot.narx2 * mahsulot.miqdor
+                if tolandi is not None:
+                    qarz = jami_summa - tolandi
+                else:
+                    tolandi = jami_summa - qarz
+
+            else:
+                if tolandi is not None:
+                    qarz = jami_summa - tolandi
+                else:
+                    tolandi = jami_summa - qarz
+
 
             if float(miqdor) > mahsulot.miqdor:
                 return render(request, "ogohlantirish.html", {"message": "Mahsulot yetarli emas!"})
@@ -35,11 +51,11 @@ class SotuvlarView(View):
             Sotuv.objects.create(
                 mahsulot=mahsulot,
                 mijoz=mijoz,
-                jami_summa=request.POST.get('jami_summa'),
+                jami_summa=jami_summa,
                 miqdor=miqdor,
-                tolandi=request.POST.get('tolandi'),
+                tolandi=tolandi,
                 qarz=qarz,
-                bolim=Bolim.objects.first()
+                bolim=request.user.sotuvchi.bolim
             )
 
             mijoz.qarz += qarz
